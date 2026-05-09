@@ -1,0 +1,48 @@
+# Secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# User data
+data/briefs/*.yaml
+!data/briefs/.gitkeep
+data/inbox-redes/*/
+!data/inbox-redes/.gitkeep
+
+# Generated assets
+_assets/
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Audio / video uploads
+*.mp3
+*.mp4
+*.m4a
+*.wav
+*.ogg
+*.flac
+*.webm
+*.mpeg
+*.mpga
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs
+*.log
+publish-log.json

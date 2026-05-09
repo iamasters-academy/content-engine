@@ -1,0 +1,14 @@
+# content-engine — code ownership
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner — every file in the repo
+*       @angelapaia
+
+# Skill core
+/SKILL.md   @angelapaia
+/tools/     @angelapaia
+/templates/ @angelapaia
+
+# Docs
+/docs/      @angelapaia
+/README.md  @angelapaia

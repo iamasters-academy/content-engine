@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: "content-engine: agentic content creation skill for Claude Code"
+message: "If you use this software, please cite it using these metadata."
+type: software
+authors:
+  - given-names: Angel
+    family-names: Aparicio
+    email: aaparicio@iamastersacademy.com
+    affiliation: "IA Masters Academy / AASC Associates"
+    orcid: ""
+repository-code: "https://github.com/iamasters-academy/content-engine"
+url: "https://github.com/iamasters-academy/content-engine"
+abstract: >
+  Agentic skill for Claude Code that turns any input (text, idea, audio,
+  video, URL, PDF, article) into 5 social-media-ready pieces with personal
+  brand voice, generates an image with Fal.ai's nano-banana-2 model, and
+  publishes to LinkedIn and Instagram via Upload-Post API. Built as a
+  reference implementation by IA Masters Academy.
+keywords:
+  - claude-code
+  - agentic
+  - content-creation
+  - social-media
+  - fal-ai
+  - groq
+  - upload-post
+license: MIT
+version: "0.1.0"
+date-released: "2026-05-10"

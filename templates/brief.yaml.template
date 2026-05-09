@@ -1,0 +1,60 @@
+# content-engine brand brief
+# Saved at: data/briefs/<slug>.yaml
+# Edit freely. The skill reads this on every run.
+
+slug: example-personal-brand            # short kebab-case identifier
+language: es                            # ISO-639-1: es, en, pt, fr, …
+created_at: 2026-05-09
+updated_at: 2026-05-09
+
+person:
+  name: ""
+  role: ""                              # e.g. "Productivity consultant for B2B SMBs"
+  company: ""
+
+ideal_client:
+  who: ""                               # one paragraph
+  pains:
+    - ""
+    - ""
+  desired_outcome: ""
+
+differentiator: ""                      # what makes you different in one sentence
+
+tone:
+  primary: direct                       # direct | warm | technical | inspirational | sarcastic
+  notes: ""                             # any nuance
+
+anti_topics:                            # NEVER post about these
+  - ""
+
+active_networks:                        # which networks the user actively posts on
+  - linkedin
+  - instagram
+  # - x
+  # - tiktok
+  # - youtube
+
+format_preferences:
+  text_heavy: true                      # likes long posts
+  story_led: true                       # likes narrative
+  data_driven: true                     # likes specific numbers
+  conversational: true                  # vs. corporate
+
+cta:
+  default: "DM me for a free 15-min check"
+  alternatives:
+    - "Comment if this resonates"
+    - "Link in bio for full breakdown"
+
+visual_identity:
+  palette: []                           # optional: list of hex colors used in own brand
+  style_keywords: []                    # e.g. ["minimalist", "modern corporate", "warm"]
+  appears_in_images: prompt             # always | never | prompt (ask each time)
+
+brand_references:                       # 1-3 brands the user admires
+  - ""
+
+# Internal notes (not used by the skill but useful for the user):
+notes: |
+  Edit anything you want. The skill respects this file as ground truth.

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="{{language}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{title}} — content-engine dashboard</title>
+<style>
+:root {
+  --primary: #3FB8C9;
+  --secondary: #E85A2C;
+  --accent-yellow: #F5C842;
+  --accent-green: #7FCC3F;
+  --dark: #2D3033;
+  --heading: #1A202C;
+  --body: #2D3748;
+  --muted: #718096;
+  --bg: #F7F9FC;
+  --surface: #FFFFFF;
+  --border: rgba(0,0,0,0.08);
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--body);
+  background: var(--bg);
+}
+.container { max-width: 980px; margin: 0 auto; padding: 24px 20px 60px; }
+header {
+  background: var(--dark);
+  color: white;
+  padding: 28px 20px;
+  margin-bottom: 24px;
+}
+header .inner { max-width: 980px; margin: 0 auto; }
+header h1 { font-size: 24px; margin-bottom: 6px; }
+header .meta { font-family: var(--font-mono); font-size: 12px; color: rgba(255,255,255,0.7); }
+
+.image-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.image-card img { width: 100%; display: block; }
+.image-card .meta { padding: 14px 18px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 18px; }
+.tab {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: 3px solid transparent;
+  padding: 10px 16px;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  color: var(--muted);
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 14px 14px 14px;
+  padding: 24px;
+  display: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.panel.active { display: block; }
+.panel h2 { font-size: 18px; margin-bottom: 4px; color: var(--heading); }
+.panel .schedule { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+.panel pre {
+  background: #F0F4FA;
+  padding: 16px 18px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--body);
+}
+
+.copy-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+.copy-btn:hover { background: #2A8A98; }
+.copy-btn.copied { background: var(--accent-green); }
+
+footer {
+  margin-top: 40px;
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+footer a { color: var(--primary); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>{{title}}</h1>
+    <div class="meta">{{slug}} · generated {{generated_at}} · brand voice: {{brand_slug}}</div>
+  </div>
+</header>
+
+<div class="container">
+
+  {{#image}}
+  <div class="image-card">
+    <img src="imagen.png" alt="Generated image">
+    <div class="meta">Generated with {{image_model}} · {{aspect_ratio}} · {{resolution}}</div>
+  </div>
+  {{/image}}
+
+  <div class="tabs">
+    <div class="tab active" data-target="linkedin">LinkedIn</div>
+    <div class="tab" data-target="instagram">Instagram</div>
+    <div class="tab" data-target="x">X thread</div>
+    <div class="tab" data-target="youtube">YouTube short</div>
+    <div class="tab" data-target="tiktok">TikTok</div>
+  </div>
+
+  <div class="panel active" id="panel-linkedin">
+    <h2>LinkedIn</h2>
+    <div class="schedule">{{linkedin.schedule}} · {{linkedin.word_count}} words</div>
+    <pre id="text-linkedin">{{linkedin.content}}</pre>
+    <button class="copy-btn" data-source="text-linkedin">Copy</button>
+  </div>
+
+  <div class="panel" id="panel-instagram">
+    <h2>Instagram</h2>
+    <div class="schedule">{{instagram.schedule}} · {{instagram.word_count}} words</div>
+    <pre id="text-instagram">{{instagram.content}}
+
+{{instagram.hashtags}}</pre>
+    <button class="copy-btn" data-source="text-instagram">Copy</button>
+  </div>
+
+  <div class="panel" id="panel-x">
+    <h2>X thread</h2>
+    <div class="schedule">{{x.schedule}} · {{x.tweet_count}} tweets</div>
+    <pre id="text-x">{{x.thread}}</pre>
+    <button class="copy-btn" data-source="text-x">Copy thread</button>
+  </div>
+
+  <div class="panel" id="panel-youtube">
+    <h2>YouTube short</h2>
+    <div class="schedule">~{{youtube.duration_s}}s · vertical 9:16</div>
+    <pre id="text-youtube">{{youtube.script}}</pre>
+    <button class="copy-btn" data-source="text-youtube">Copy script</button>
+  </div>
+
+  <div class="panel" id="panel-tiktok">
+    <h2>TikTok</h2>
+    <div class="schedule">~{{tiktok.duration_s}}s · vertical 9:16</div>
+    <pre id="text-tiktok">{{tiktok.script}}
+
+CAPTION:
+{{tiktok.caption}}
+{{tiktok.hashtags}}</pre>
+    <button class="copy-btn" data-source="text-tiktok">Copy script + caption</button>
+  </div>
+
+</div>
+
+<footer>
+  Generated with <a href="https://github.com/iamasters-academy/content-engine">content-engine</a>
+  · IA Masters Academy
+</footer>
+
+<script>
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.getAttribute('data-target');
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + target).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const source = document.getElementById(btn.getAttribute('data-source'));
+    navigator.clipboard.writeText(source.textContent).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+    });
+  });
+});
+</script>
+
+</body>
+</html>
