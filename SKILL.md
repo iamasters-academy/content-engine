@@ -7,7 +7,7 @@ description: |
   de imagen que el usuario elija (Fal.ai, OpenAI o cualquier otro vía URL) y
   publica en LinkedIn e Instagram con Upload-Post API. Reemplaza workflows
   visuales de n8n por una sola conversación.
-version: 0.2.0
+version: 0.2.1
 author: Angel Aparicio (IA Masters Academy)
 license: MIT
 language: es
@@ -60,34 +60,55 @@ siguientes hasta haberlas configurado en la Fase 0.
 
 ### Estado a comprobar al arrancar
 
-Antes de saludar al usuario, **comprueba**:
+Antes de saludar al usuario, **ejecuta**:
 
-1. ¿Existe `.env.local` en la raíz de la skill?
-2. ¿Existe `data/image_config.yaml`?
-3. ¿Existe algún brief en `data/briefs/*.yaml`?
+```bash
+python tools/validate_env.py --json
+```
+
+Este comando hace un ping real a cada API y devuelve el estado. Interpreta:
+- Si `fal.ok=true` y `fal.configured=true` → tienes Fal funcionando.
+- Si `fal.configured=false` → la key no está, hay que configurarla.
+- Si `fal.configured=true` y `fal.ok=false` → la key está pero está rechazada (regenerar).
+- `groq`, `upload_post`, `openai` son opcionales — solo importa que funcionen si están configuradas.
+
+Después, comprueba archivos:
+
+1. ¿Existe `data/image_config.yaml`?
+2. ¿Existe algún brief en `data/briefs/*.yaml`?
 
 Esto te dice en qué fase entrar:
-- Si todo falta → empieza por **Fase 0** (setup wizard).
-- Si `.env.local` existe pero `image_config.yaml` no → empieza por **Fase 0.5**.
-- Si todo existe → empieza por **Fase A** (o salta a B si el usuario ya tiene brief).
+- Si Fal no funciona o falta → **Fase 0** (setup wizard).
+- Si Fal OK pero `image_config.yaml` no existe → **Fase 0.5** (selección de modelo).
+- Si todo existe → **Fase A** (o salta a B si el usuario ya tiene brief).
 
 ---
 
 ### Fase 0 — Setup Wizard (asistente de configuración)
 
-Solo se ejecuta si `.env.local` no existe o tiene keys vacías.
+Solo se ejecuta si `validate_env.py` reporta que `FAL_KEY` no está configurada
+o está rechazada.
 
 **Saludo inicial sugerido:**
 
-> ¡Hola! Soy `content-engine`. Veo que es la primera vez que me usas. Te voy a
-> guiar paso a paso para dejar todo listo. Vamos a configurar:
+> ¡Hola! Soy `content-engine`. Veo que es la primera vez que me usas.
 >
-> 1. Tres cuentas gratuitas (~10 min en total)
-> 2. Tu modelo de imagen preferido
-> 3. Tu brief de marca personal
+> Tienes dos opciones:
 >
-> ¿Empezamos? Si ya tienes alguna cuenta de las que necesitamos, dímelo y nos la
-> saltamos.
+> 1. **Te guío paso a paso** (recomendado para principiantes). Te llevo por las
+>    cuentas, las API keys, el modelo de imagen y tu brief de marca. ~20 minutos.
+>
+> 2. **Ya tengo todo configurado a mano** y quiero saltarme el wizard. Si
+>    elegiste esto, asume que has rellenado `.env.local` y `data/image_config.yaml`
+>    a mano (mira `docs/installation.md`).
+>
+> ¿Cuál prefieres? (1 o 2)
+
+**Si elige 2 (fast-path):** ejecuta `validate_env.py` otra vez. Si todo OK,
+salta directamente a **Fase A**. Si algo falla, vuelves a Fase 0 con la
+opción 1 y le dices qué hay mal.
+
+**Si elige 1:** continúa con los pasos 0.1-0.4 abajo.
 
 #### Paso 0.1 — Fal.ai (generación de imagen)
 
@@ -100,8 +121,9 @@ Solo se ejecuta si `.env.local` no existe o tiene keys vacías.
 
 3. Pídele que pegue la key. **NO la guardes en el chat ni la repitas en pantalla.**
    Guárdala directamente en `.env.local` como `FAL_KEY=...`.
-4. Verifica que funciona haciendo una llamada de test mínima a un modelo barato.
-   Si falla, explica el error y guíalo a regenerar la key.
+4. Verifica que funciona ejecutando `python tools/validate_env.py --only fal`.
+   Si devuelve OK → continuar. Si devuelve error → mostrar el mensaje y guiar
+   al usuario a regenerar la key.
 
 #### Paso 0.2 — Upload-Post (publicación)
 
@@ -121,6 +143,15 @@ Solo se ejecuta si `.env.local` no existe o tiene keys vacías.
    > 3. Ve a la sección "API" y genera una API key. Cópiala.
 
 3. Pega la key en `.env.local` como `UPLOAD_POST_API_KEY=...`.
+4. **Pregunta también el `user` de Upload-Post** (el identificador de cuenta,
+   visible en el dashboard). Es OBLIGATORIO en cada publicación. Guárdalo en
+   `data/upload_post_config.yaml`:
+   ```yaml
+   user: "tu-user-en-upload-post"
+   linkedin_page_id: ""        # opcional, solo si publicas en página LI de empresa
+   facebook_page_id: ""        # obligatorio si vas a publicar en Facebook
+   ```
+5. Valida con `python tools/validate_env.py --only upload_post`.
 
 #### Paso 0.3 — Groq (transcripción)
 
@@ -133,6 +164,7 @@ Solo se ejecuta si `.env.local` no existe o tiene keys vacías.
    > personal. Ve a `https://console.groq.com/keys` y crea una API key.
 
 3. Pega como `GROQ_API_KEY=...`.
+4. Valida con `python tools/validate_env.py --only groq`.
 
 #### Paso 0.4 — Confirmación
 
@@ -281,6 +313,17 @@ Si el usuario respondió ya en su mensaje inicial, no preguntes lo que ya sabes.
 
 ### Fase D2 — Generación de imagen
 
+**Confirmación de coste (obligatoria si genera más de 1 imagen):**
+
+Antes de llamar al modelo, si la fase D devolvió `carrusel de 3` o `n>1`,
+muestra un aviso al usuario y pide confirmación:
+
+> Vas a generar 3 imágenes con `<modelo>`. Coste estimado: ~$<n × precio>.
+> ¿Continúo? (sí/no)
+
+Para 1 imagen no pedir confirmación. Si el usuario rechaza, volver a fase D
+y ofrecer reducir el número o cambiar a ruta gratis.
+
 Construye un prompt detallado **en inglés** basado en:
 - La pieza elegida (ancla el visual al post de LinkedIn o Instagram).
 - Identidad visual de marca (extrae del brief si está definida).
@@ -318,28 +361,43 @@ Devuelve el prompt como bloque copy-paste con instrucciones en español:
 
 ### Fase E — Publicar vía Upload-Post API
 
-Pregunta al usuario en qué redes quiere publicar (checkbox style):
-- [ ] LinkedIn
-- [ ] Instagram
-- [ ] X
-- [ ] TikTok
-- [ ] YouTube
+Pregunta al usuario en qué redes quiere publicar. **Importante**: Upload-Post
+soporta solo estas plataformas: `linkedin`, `instagram`, `x`, `tiktok`,
+`facebook`, `threads`, `pinterest`, `bluesky`, `reddit`, `google_business`.
+**YouTube no está soportado** para photos (solo para video upload separado).
 
-Para cada red seleccionada, llama `tools/upload_post.py`:
+Lee `data/upload_post_config.yaml` para sacar el `user` (identificador
+obligatorio en cada publicación) y, si aplica, `linkedin_page_id` /
+`facebook_page_id`.
+
+Llama `tools/upload_post.py` UNA SOLA VEZ con todas las plataformas elegidas
+(la API soporta multi-plataforma en una sola petición):
 
 ```bash
 python tools/upload_post.py \
+    --user "<user del config>" \
     --image data/inbox-redes/<YYYYMMDD>-<slug>/imagen.png \
-    --caption "<caption del canal>" \
+    --title "<caption por defecto, p.ej. el de LinkedIn>" \
+    --description "<texto extendido si lo hay>" \
     --platforms linkedin,instagram \
     --wait
 ```
 
-Espera `status: published` y devuelve las URLs de los posts.
+Espera la respuesta (`success: true`) y guarda las URLs/IDs devueltos en
+`data/inbox-redes/<YYYYMMDD>-<slug>/publish-log.json`.
 
-Genera `data/inbox-redes/<YYYYMMDD>-<slug>/dashboard.html` desde
-`templates/dashboard.html.template` con tabs por canal, copy-to-clipboard
-y calendario sugerido. Listo para pasar al community manager.
+#### Generar el dashboard
+
+Antes de cerrar, escribe `data/inbox-redes/<YYYYMMDD>-<slug>/meta.json` con
+los metadatos de la sesión (slug, brand_slug, schedules sugeridos, image
+metadata, etc.). Después ejecuta:
+
+```bash
+python tools/render_dashboard.py --slug <YYYYMMDD>-<slug>
+```
+
+Esto genera `dashboard.html` en el mismo directorio. Listo para enviar al
+community manager por WhatsApp.
 
 ---
 
@@ -356,13 +414,16 @@ añade:
 
 ## Tools disponibles
 
+- `tools/validate_env.py` — valida que las API keys configuradas funcionan.
+  La skill lo ejecuta al arrancar y al finalizar cada paso del wizard.
 - `tools/image_engine.py` — abstracción que elige el backend de imagen correcto
-  según `image_config.yaml`. Es el único punto de entrada que la skill llama
-  para generar imágenes.
+  según `image_config.yaml`. Único punto de entrada para generar imagen.
 - `tools/fal_image.py` — cliente Fal.ai (cualquier modelo, configurable).
 - `tools/openai_image.py` — cliente OpenAI gpt-image-1 (DALL-E 3 actualizado).
 - `tools/groq_transcribe.py` — cliente Groq Whisper API.
 - `tools/upload_post.py` — cliente Upload-Post API.
+- `tools/render_dashboard.py` — renderiza `dashboard.html` desde el template
+  + outputs de la sesión.
 
 Cada uno tiene `--help`.
 
