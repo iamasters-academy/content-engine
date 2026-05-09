@@ -1,0 +1,8 @@
+provider: fal
+model_id: nano-banana-2
+endpoint: fal-ai/nano-banana-2
+defaults:
+  aspect_ratio: "1:1"
+  resolution: "1K"
+  output_format: "png"
+notes: "Default para IA Masters Academy. Cambiar via Fase 0.5 de la skill o editando este archivo."

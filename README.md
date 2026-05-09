@@ -28,9 +28,10 @@ Y la skill hace esto:
 5. Investiga lo que está funcionando en 2026 en cada red.
 6. Genera 5 piezas adaptadas (LinkedIn / X / Instagram / YouTube short / TikTok).
 7. Te pregunta sobre el visual (1 imagen / carrusel / reel · ratio · si sales tú · ruta pro o gratis).
-8. Si es ruta pro, **genera la imagen agénticamente** con el modelo configurado.
-9. Publica en LinkedIn + Instagram con Upload-Post API.
-10. Genera un dashboard HTML para pasar al community manager.
+8. Si es ruta pro, **genera la imagen agénticamente** con el modelo configurado y te la enseña inline en el chat.
+9. Te muestra el **prompt completo en inglés** por si quieres copiarlo y refinar manualmente en otra herramienta.
+10. Publica en LinkedIn + Instagram con Upload-Post API.
+11. Devuelve URLs reales de los posts en el chat.
 
 ---
 
@@ -171,10 +172,10 @@ Para uso típico (1-2 posts/semana), espera **menos de 5 €/mes en total**.
 ## Lo que la skill NO hace (y por qué)
 
 - ❌ NO publica solo a las 9:00 sin tu Mac encendido. Necesitas que Claude Code esté corriendo.
-- ❌ NO sustituye a tu community manager — produce el material listo para handoff.
 - ❌ NO conecta directo a LinkedIn ni Instagram. Upload-Post es el agregador certificado.
 - ❌ NO inventa estadísticas ni citas. Cita fuentes cuando las usa.
 - ❌ NO hace cross-posting del mismo texto. Adapta por canal por diseño.
+- ❌ NO genera dashboard HTML por defecto (todo se enseña inline en el chat). Si lo quieres para tu community manager, pídeselo: la skill llama `render_dashboard.py` bajo demanda.
 
 ---
 

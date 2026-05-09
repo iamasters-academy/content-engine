@@ -7,7 +7,7 @@ description: |
   de imagen que el usuario elija (Fal.ai, OpenAI o cualquier otro vía URL) y
   publica en LinkedIn e Instagram con Upload-Post API. Reemplaza workflows
   visuales de n8n por una sola conversación.
-version: 0.2.1
+version: 0.2.2
 author: Angel Aparicio (IA Masters Academy)
 license: MIT
 language: es
@@ -324,6 +324,19 @@ muestra un aviso al usuario y pide confirmación:
 Para 1 imagen no pedir confirmación. Si el usuario rechaza, volver a fase D
 y ofrecer reducir el número o cambiar a ruta gratis.
 
+**SIEMPRE muestra al usuario el prompt completo en inglés ANTES de llamar al
+modelo.** El usuario puede querer copiarlo para usar en otro sitio (ChatGPT,
+Gemini, otro modelo). Formato:
+
+> Prompt de imagen (en inglés, copy-paste):
+>
+> ```
+> <prompt completo>
+> ```
+>
+> Modelo: `<modelo>` · Aspect ratio: `<ratio>` · Resolución: `<res>`
+> ¿Continúo o quieres ajustarlo?
+
 Construye un prompt detallado **en inglés** basado en:
 - La pieza elegida (ancla el visual al post de LinkedIn o Instagram).
 - Identidad visual de marca (extrae del brief si está definida).
@@ -337,17 +350,37 @@ overlays de texto si los hay, formato.
 #### Si la ruta es `pro`:
 
 Llama a `tools/image_engine.py` que delega al backend correcto según
-`image_config.yaml`:
+`image_config.yaml`. Para múltiples imágenes, llama una vez por imagen
+con paths distintos:
 
 ```bash
 python tools/image_engine.py \
     --prompt "..." \
     --aspect-ratio 1:1 \
-    --output data/inbox-redes/<YYYYMMDD>-<slug>/imagen.png
+    --output data/inbox-redes/<YYYYMMDD>-<slug>/imagen-1.png
 ```
 
 `image_engine.py` se encarga de elegir Fal o OpenAI internamente. Espera la
-respuesta. Muestra preview al usuario.
+respuesta y guarda la imagen.
+
+**Inmediatamente después, muestra al usuario en el chat:**
+
+1. **La imagen visualmente** usando el tool `Read` sobre el path local
+   (Claude Code la renderiza inline en el chat).
+2. **La URL temporal** que devolvió el modelo (Fal devuelve URL en su
+   respuesta). Útil si el usuario la quiere compartir antes de descargarla.
+3. **El path local** donde quedó guardada.
+4. **Recordar el prompt usado** para que el usuario pueda copiarlo si quiere
+   refinarla manualmente en ChatGPT/Gemini/otra herramienta.
+
+Formato sugerido en chat:
+
+> **Imagen 1 generada:**
+> [aquí la imagen renderizada inline con Read]
+>
+> - Path local: `data/inbox-redes/<slug>/imagen-1.png`
+> - URL temporal: `https://...`
+> - Prompt usado: ver bloque anterior
 
 #### Si la ruta es `gratis`:
 
@@ -359,16 +392,52 @@ Devuelve el prompt como bloque copy-paste con instrucciones en español:
 
 ---
 
-### Fase E — Publicar vía Upload-Post API
+### Fase E — Publicar vía Upload-Post API + resumen final en chat
 
-Pregunta al usuario en qué redes quiere publicar. **Importante**: Upload-Post
-soporta solo estas plataformas: `linkedin`, `instagram`, `x`, `tiktok`,
-`facebook`, `threads`, `pinterest`, `bluesky`, `reddit`, `google_business`.
-**YouTube no está soportado** para photos (solo para video upload separado).
+#### Antes de publicar — muestra todo en el chat
+
+Antes de llamar a Upload-Post, **enseña al usuario en el chat el set completo
+listo para validar**:
+
+1. **Imágenes generadas** — todas, renderizadas inline con `Read` + path local
+   + URL temporal de cada una.
+2. **Prompt(s) de imagen usado(s)** — bloque copy-paste en inglés, por si el
+   usuario quiere refinar manualmente en otra herramienta.
+3. **Caption por canal** — bloques separados, listos para copiar:
+
+   ```
+   ━━━ LINKEDIN ━━━
+   <contenido linkedin.md>
+
+   ━━━ INSTAGRAM ━━━
+   <contenido instagram.md + hashtags>
+
+   ━━━ X / THREAD ━━━
+   <contenido x-thread.md>
+
+   ━━━ YOUTUBE SHORT ━━━
+   <contenido youtube-short.md>
+
+   ━━━ TIKTOK ━━━
+   <contenido tiktok.md>
+   ```
+
+4. **Resumen ejecutivo** — qué se va a publicar y dónde.
+
+Pregunta al usuario:
+- ¿Lo publicamos como está?
+- ¿Quieres editar algo antes?
+- ¿Lo dejamos sin publicar y solo te lo llevas en el chat?
+
+#### Si el usuario confirma publicar
+
+Pregunta en qué redes (de las que están en su `active_networks` del brief).
+**Importante**: Upload-Post soporta solo estas plataformas: `linkedin`,
+`instagram`, `x`, `tiktok`, `facebook`, `threads`, `pinterest`, `bluesky`,
+`reddit`, `google_business`. **YouTube no está soportado** para photos.
 
 Lee `data/upload_post_config.yaml` para sacar el `user` (identificador
-obligatorio en cada publicación) y, si aplica, `linkedin_page_id` /
-`facebook_page_id`.
+obligatorio) y, si aplica, `linkedin_page_id` / `facebook_page_id`.
 
 Llama `tools/upload_post.py` UNA SOLA VEZ con todas las plataformas elegidas
 (la API soporta multi-plataforma en una sola petición):
@@ -376,28 +445,30 @@ Llama `tools/upload_post.py` UNA SOLA VEZ con todas las plataformas elegidas
 ```bash
 python tools/upload_post.py \
     --user "<user del config>" \
-    --image data/inbox-redes/<YYYYMMDD>-<slug>/imagen.png \
-    --title "<caption por defecto, p.ej. el de LinkedIn>" \
+    --image data/inbox-redes/<YYYYMMDD>-<slug>/imagen-1.png \
+    --title "<caption del canal principal, ej. LinkedIn>" \
     --description "<texto extendido si lo hay>" \
     --platforms linkedin,instagram \
     --wait
 ```
 
-Espera la respuesta (`success: true`) y guarda las URLs/IDs devueltos en
-`data/inbox-redes/<YYYYMMDD>-<slug>/publish-log.json`.
+Espera la respuesta (`success: true`) y muestra al usuario las URLs reales
+de los posts publicados. Guarda también en
+`data/inbox-redes/<YYYYMMDD>-<slug>/publish-log.json` por trazabilidad.
 
-#### Generar el dashboard
+#### Cierre
 
-Antes de cerrar, escribe `data/inbox-redes/<YYYYMMDD>-<slug>/meta.json` con
-los metadatos de la sesión (slug, brand_slug, schedules sugeridos, image
-metadata, etc.). Después ejecuta:
+Resumen final en el chat:
 
-```bash
-python tools/render_dashboard.py --slug <YYYYMMDD>-<slug>
-```
+> ✓ Publicado en: [LinkedIn](url) · [Instagram](url)
+> ✓ Imagen: `data/inbox-redes/<slug>/imagen.png`
+> ✓ Captions y prompt guardados en `data/inbox-redes/<slug>/`
+>
+> Si quieres editar y republicar una pieza, dime qué red y qué cambio.
 
-Esto genera `dashboard.html` en el mismo directorio. Listo para enviar al
-community manager por WhatsApp.
+**El dashboard HTML ya no se genera por defecto.** Si el usuario lo pide
+explícitamente ("genérame el dashboard.html para mi community manager"),
+ejecuta `python tools/render_dashboard.py --slug <slug>`. Es opcional.
 
 ---
 
@@ -445,8 +516,8 @@ data/
         ├── youtube-short.md
         ├── tiktok.md
         ├── image-prompt.md
-        ├── imagen.png                   # si ruta pro
-        ├── dashboard.html
+        ├── imagen.png                   # si ruta pro (puede haber imagen-1.png, imagen-2.png... si carrusel)
+        ├── dashboard.html               # SOLO si el usuario lo pide explícitamente
         └── publish-log.json             # URLs de los posts publicados
 ```
 

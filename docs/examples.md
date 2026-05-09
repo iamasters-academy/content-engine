@@ -94,12 +94,20 @@ Edita `data/briefs/<slug>.yaml` directamente cuando notes patrones que quieres a
 
 Guarda el archivo. La próxima ejecución la skill recoge los cambios.
 
-## Ejemplo 7 — Solo dashboard, sin publicar
+## Ejemplo 7 — Solo generar, sin publicar
 
 Si tu community manager publica desde Buffer/Metricool, no hace falta que la skill publique. Solo dile:
 
 ```
-> "Genera las 5 piezas + imagen + dashboard. No publiques."
+> "Genera las 5 piezas + imagen. No publiques."
 ```
 
-La skill genera todo y te deja `dashboard.html` listo. Tu CM lo abre y trabaja desde ahí.
+La skill genera todo y te lo enseña en el chat (imagen inline + prompt + los 5 captions). Tú copias y pasas a tu CM.
+
+Si específicamente quieres un HTML para enviar por WhatsApp con tabs y copy-to-clipboard:
+
+```
+> "Genérame también el dashboard HTML para mi CM"
+```
+
+La skill llama a `render_dashboard.py` y guarda el HTML en `data/inbox-redes/<slug>/dashboard.html`. Bajo demanda, no por defecto.

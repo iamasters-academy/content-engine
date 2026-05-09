@@ -77,9 +77,11 @@ Si eliges Pro, la skill llama a tu modelo (Fal, OpenAI o el que configuraste), e
 
 La skill pregunta en qué redes (checkboxes). Llama a Upload-Post API y te devuelve las URLs reales de los posts publicados.
 
-## 8. Pasa el resto al community manager
+## 8. Todo en el chat
 
-La skill genera `dashboard.html` en `data/inbox-redes/<fecha>-<slug>/`. Es un HTML con tabs por canal, copy-to-clipboard y calendario sugerido. Lo compartes por WhatsApp con tu CM. Tiene todo listo.
+La skill te muestra todo en el propio chat: la imagen renderizada, el prompt en inglés (por si quieres refinarlo en otra herramienta), las 5 piezas separadas por canal, las URLs reales de los posts publicados.
+
+Si tu community manager prefiere un HTML con tabs y copy-to-clipboard para programar desde Buffer/Metricool, **pídeselo a la skill**: `"genérame también el dashboard HTML para mi CM"`. Es opcional, no por defecto.
 
 ---
 
