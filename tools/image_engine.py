@@ -112,9 +112,10 @@ def generate(
     aspect_ratio: str | None = None,
     resolution: str | None = None,
     output_format: str | None = None,
+    edit_from: list[Path] | None = None,
     config: dict | None = None,
 ) -> dict:
-    """Genera la imagen usando el backend definido en config.
+    """Genera o edita una imagen usando el backend definido en config.
 
     Args:
         prompt: prompt de la imagen (preferiblemente en inglés).
@@ -122,30 +123,44 @@ def generate(
         aspect_ratio: override (1:1, 9:16, 16:9...). Si None, usa config.defaults.
         resolution: solo aplica a Fal (0.5K, 1K, 2K, 4K).
         output_format: png, jpeg, webp.
+        edit_from: si se pasa, modo edición — la(s) imagen(es) de referencia.
         config: dict de config. Si None, se carga de image_config.yaml.
 
     Returns:
-        dict con 'saved_to', 'provider', 'model'.
+        dict con 'saved_to', 'provider', 'model', 'mode'.
     """
     cfg = config or load_config()
     provider = (cfg.get("provider") or "fal").lower()
     defaults = cfg.get("defaults") or {}
 
     aspect_ratio = aspect_ratio or defaults.get("aspect_ratio") or "1:1"
-    resolution = resolution or defaults.get("resolution") or "1K"
+    resolution = resolution or defaults.get("resolution") or "2K"
     output_format = output_format or defaults.get("output_format") or "png"
 
     output = Path(output)
+    is_edit = bool(edit_from)
 
     if provider == "fal":
-        endpoint = cfg.get("endpoint") or f"fal-ai/{cfg.get('model_id', 'nano-banana-2')}"
-        result = fal_image.generate(
-            prompt=prompt,
-            model_id=endpoint,
-            aspect_ratio=aspect_ratio,
-            resolution=resolution,
-            output_format=output_format,
-        )
+        if is_edit:
+            # Endpoint de edición de Fal nano-banana-2
+            endpoint = cfg.get("edit_endpoint") or "fal-ai/nano-banana-2/edit"
+            result = fal_image.edit(
+                prompt=prompt,
+                image_paths=list(edit_from),
+                model_id=endpoint,
+                aspect_ratio=aspect_ratio,
+                resolution=resolution,
+                output_format=output_format,
+            )
+        else:
+            endpoint = cfg.get("endpoint") or f"fal-ai/{cfg.get('model_id', 'nano-banana-2')}"
+            result = fal_image.generate(
+                prompt=prompt,
+                model_id=endpoint,
+                aspect_ratio=aspect_ratio,
+                resolution=resolution,
+                output_format=output_format,
+            )
         images = result.get("images") or []
         if not images:
             raise ImageEngineError(f"Fal devolvió sin imágenes: {result}")
@@ -154,17 +169,28 @@ def generate(
             "saved_to": str(output),
             "provider": "fal",
             "model": endpoint,
+            "mode": "edit" if is_edit else "generate",
+            "image_url": images[0].get("url"),
         }
 
     if provider == "openai":
         size = openai_image.ASPECT_TO_SIZE.get(aspect_ratio, "1024x1024")
-        response = openai_image.generate(
-            prompt=prompt,
-            size=size,
-            output_format=output_format,
-        )
+        if is_edit:
+            response = openai_image.edit(
+                prompt=prompt,
+                image_paths=list(edit_from),
+                size=size,
+                output_format=output_format,
+            )
+        else:
+            response = openai_image.generate(
+                prompt=prompt,
+                size=size,
+                output_format=output_format,
+            )
         info = openai_image.save_first_image(response, output)
         info["provider"] = "openai"
+        info["mode"] = "edit" if is_edit else "generate"
         return info
 
     raise ImageEngineError(
@@ -173,11 +199,13 @@ def generate(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Genera imagen usando el backend configurado.")
+    parser = argparse.ArgumentParser(description="Genera o edita imagen usando el backend configurado.")
     parser.add_argument("--prompt", required=True)
     parser.add_argument("--aspect-ratio", default=None)
     parser.add_argument("--resolution", default=None, help="Solo Fal (0.5K, 1K, 2K, 4K)")
     parser.add_argument("--output-format", default=None, choices=["png", "jpeg", "webp"])
+    parser.add_argument("--edit-from", action="append", default=[], metavar="PATH",
+                        help="Modo edit: ruta a imagen de referencia. Repetible.")
     parser.add_argument("--output", required=True)
     parser.add_argument("--config", default=None, help="Ruta a image_config.yaml")
     args = parser.parse_args()
@@ -191,6 +219,7 @@ def main() -> int:
             aspect_ratio=args.aspect_ratio,
             resolution=args.resolution,
             output_format=args.output_format,
+            edit_from=[Path(p) for p in args.edit_from] if args.edit_from else None,
             config=cfg,
         )
     except (ImageEngineError, fal_image.FalError, openai_image.OpenAIImageError) as e:

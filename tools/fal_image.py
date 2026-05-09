@@ -27,7 +27,9 @@ Doc:           https://fal.ai/models/fal-ai/nano-banana-2/api
 from __future__ import annotations
 
 import argparse
+import base64
 import json
+import mimetypes
 import os
 import sys
 import time
@@ -37,6 +39,7 @@ from pathlib import Path
 
 API_BASE = "https://queue.fal.run"
 DEFAULT_MODEL = "fal-ai/nano-banana-2"
+DEFAULT_EDIT_MODEL = "fal-ai/nano-banana-2/edit"
 
 # Aspect ratios soportados por nano-banana-2 (otros modelos pueden tener subset).
 COMMON_ASPECT_RATIOS = {
@@ -98,12 +101,24 @@ def download(url: str, output_path: Path) -> None:
         f.write(resp.read())
 
 
+def file_to_data_uri(path: Path) -> str:
+    """Convierte un archivo local a Data URI base64 (para Fal image_urls).
+
+    Fal acepta tanto URLs públicas como Data URIs. Esto evita tener que
+    subir el archivo a un servicio externo.
+    """
+    mime = mimetypes.guess_type(str(path))[0] or "image/png"
+    data = path.read_bytes()
+    encoded = base64.b64encode(data).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
+
+
 def generate(
     *,
     prompt: str,
     model_id: str = DEFAULT_MODEL,
     aspect_ratio: str = "1:1",
-    resolution: str | None = "1K",
+    resolution: str | None = "2K",
     output_format: str | None = "png",
     num_images: int = 1,
     extra_params: dict | None = None,
@@ -135,19 +150,74 @@ def generate(
     return poll(api_key, model_id, request_id)
 
 
+def edit(
+    *,
+    prompt: str,
+    image_paths: list[Path],
+    model_id: str = DEFAULT_EDIT_MODEL,
+    aspect_ratio: str | None = None,
+    resolution: str | None = "2K",
+    output_format: str | None = "png",
+    num_images: int = 1,
+    extra_params: dict | None = None,
+    api_key: str | None = None,
+) -> dict:
+    """Edita una o varias imágenes de referencia con nano-banana-2/edit.
+
+    Útil para:
+    - Pasar una foto del usuario y pedir "ponme a mí en este escenario"
+    - Pasar un logo y mantener consistencia visual
+    - Hacer variantes de una imagen base
+
+    Las imágenes se convierten a Data URI base64 internamente, no hay
+    que subirlas a ningún servicio externo.
+    """
+    api_key = api_key or os.environ.get("FAL_KEY")
+    if not api_key:
+        raise FalError("FAL_KEY no está definida.")
+    if not image_paths:
+        raise FalError("Necesito al menos una imagen de referencia.")
+
+    image_urls: list[str] = []
+    for p in image_paths:
+        if not p.exists():
+            raise FalError(f"Imagen de referencia no encontrada: {p}")
+        image_urls.append(file_to_data_uri(p))
+
+    payload: dict = {
+        "prompt": prompt,
+        "image_urls": image_urls,
+        "num_images": num_images,
+    }
+    if aspect_ratio:
+        payload["aspect_ratio"] = aspect_ratio
+    if resolution:
+        payload["resolution"] = resolution
+    if output_format:
+        payload["output_format"] = output_format
+    if extra_params:
+        payload.update(extra_params)
+
+    request_id = submit(api_key, model_id, payload)
+    return poll(api_key, model_id, request_id)
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Genera una imagen con cualquier modelo de Fal.ai.")
+    parser = argparse.ArgumentParser(description="Genera o edita una imagen con cualquier modelo de Fal.ai.")
     parser.add_argument("--prompt", required=True, help="Prompt de la imagen (recomendado en inglés).")
-    parser.add_argument("--model", default=DEFAULT_MODEL,
-                        help=f"ID del modelo Fal (default: {DEFAULT_MODEL})")
+    parser.add_argument("--model", default=None,
+                        help=f"ID del modelo Fal (default: {DEFAULT_MODEL} en generate, "
+                             f"{DEFAULT_EDIT_MODEL} con --edit-from)")
     parser.add_argument("--aspect-ratio", default="1:1")
-    parser.add_argument("--resolution", default="1K", help="0.5K, 1K, 2K, 4K — depende del modelo")
+    parser.add_argument("--resolution", default="2K", help="0.5K, 1K, 2K, 4K — depende del modelo")
     parser.add_argument("--output-format", default="png", choices=["png", "jpeg", "webp"])
     parser.add_argument("--num-images", type=int, default=1)
     parser.add_argument("--web-search", action="store_true",
                         help="Activa búsqueda web del modelo (nano-banana-2 only).")
     parser.add_argument("--thinking", choices=["minimal", "high"], default=None,
                         help="thinking_level (nano-banana-2 only)")
+    parser.add_argument("--edit-from", action="append", default=[], metavar="PATH",
+                        help="Modo edit: pasa imagen(es) de referencia. Repetible para múltiples.")
     parser.add_argument("--output", required=True, help="Ruta local para guardar la primera imagen.")
     parser.add_argument("--extra-params", default=None,
                         help="JSON string con parámetros extra del modelo")
@@ -166,15 +236,31 @@ def main() -> int:
             return 1
 
     try:
-        result = generate(
-            prompt=args.prompt,
-            model_id=args.model,
-            aspect_ratio=args.aspect_ratio,
-            resolution=args.resolution,
-            output_format=args.output_format,
-            num_images=args.num_images,
-            extra_params=extra or None,
-        )
+        if args.edit_from:
+            # Modo edición — pasa imágenes de referencia
+            model = args.model or DEFAULT_EDIT_MODEL
+            result = edit(
+                prompt=args.prompt,
+                image_paths=[Path(p) for p in args.edit_from],
+                model_id=model,
+                aspect_ratio=args.aspect_ratio if args.aspect_ratio != "1:1" else None,
+                resolution=args.resolution,
+                output_format=args.output_format,
+                num_images=args.num_images,
+                extra_params=extra or None,
+            )
+        else:
+            # Modo generación normal
+            model = args.model or DEFAULT_MODEL
+            result = generate(
+                prompt=args.prompt,
+                model_id=model,
+                aspect_ratio=args.aspect_ratio,
+                resolution=args.resolution,
+                output_format=args.output_format,
+                num_images=args.num_images,
+                extra_params=extra or None,
+            )
     except FalError as e:
         print(f"[fal_image] error: {e}", file=sys.stderr)
         return 1
@@ -191,7 +277,9 @@ def main() -> int:
         "width": first.get("width"),
         "height": first.get("height"),
         "content_type": first.get("content_type"),
-        "model": args.model,
+        "model": model,
+        "mode": "edit" if args.edit_from else "generate",
+        "image_url": first.get("url"),
     }, indent=2, ensure_ascii=False))
     return 0
 

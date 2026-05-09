@@ -7,7 +7,7 @@ description: |
   de imagen que el usuario elija (Fal.ai, OpenAI o cualquier otro vía URL) y
   publica en LinkedIn e Instagram con Upload-Post API. Reemplaza workflows
   visuales de n8n por una sola conversación.
-version: 0.2.2
+version: 0.3.0
 author: Angel Aparicio (IA Masters Academy)
 license: MIT
 language: es
@@ -313,7 +313,68 @@ Si el usuario respondió ya en su mensaje inicial, no preguntes lo que ya sabes.
 
 ### Fase D2 — Generación de imagen
 
-**Confirmación de coste (obligatoria si genera más de 1 imagen):**
+#### Reglas duras de construcción del prompt (NO romper)
+
+1. **Idioma del prompt**: SIEMPRE en inglés (los modelos rinden mejor con
+   prompts en inglés, sin excepción).
+
+2. **Idioma de los textos overlay dentro de la imagen**: en el `language`
+   del brief del usuario. Por defecto **español**. Ejemplo correcto si
+   `language: es`:
+   - ✅ `large white text "RECORDATORIO" centered`
+   - ✅ `bold green banner with "Tras 8 semanas"`
+   - ❌ `bold green banner with "After 8 weeks"` (saldría en inglés y la
+     audiencia hispana se desconcierta).
+
+3. **Colores**: SIEMPRE códigos hex específicos, NUNCA descripciones vagas.
+   - ✅ `#080808` (no "ultra dark black")
+   - ✅ `#FF8C00` (no "warm orange")
+   - ✅ `radial glow with #FF8C00 to #FFD700 gradient`
+   - ❌ `dark background with warm orange accents`
+
+4. **Tipografía**: especificar estilo + peso + referencia.
+   - ✅ `bold sans-serif (Inter or Söhne style), heavy 800 weight`
+   - ❌ `nice modern font`
+
+5. **Composición**: layout, alineación, espaciado concretos.
+   - ✅ `centered vertical layout, 16% top margin, 8% gap between elements`
+   - ❌ `nice composition`
+
+6. **Ausencia explícita**: si NO debe aparecer algo, dilo en mayúsculas.
+   - ✅ `NO HUMAN FIGURES`
+   - ✅ `NO TEXT EXCEPT THE TITLE`
+
+7. **Carrusel (multi-imagen) — CONSISTENCIA OBLIGATORIA**: cuando el usuario
+   pide 2+ imágenes relacionadas, TODOS los prompts deben compartir un
+   **bloque de estilo común** (paleta hex, tipografía, mood, fondo,
+   composición base) repetido literalmente en cada prompt. Solo cambia el
+   contenido específico de cada slide. Esto es lo único que asegura
+   consistencia entre generaciones independientes.
+
+#### Plantilla de prompt recomendada
+
+```
+[Aspect ratio + tipo: ej. "Vertical 9:16 modern editorial infographic"]
+
+[Estilo común — repetir en TODOS los slides de un carrusel]:
+Background: {color hex}
+Typography: {family + weight + reference}
+Palette: {hex codes con roles claros}
+Mood: {minimalist editorial / cinematic dark urgency / warm corporate / etc.}
+
+[Layout específico de este slide]:
+Top: {elemento + texto literal en idioma del brief}
+Middle: {elemento + datos específicos}
+Bottom: {elemento + texto literal en idioma del brief}
+
+[Restricciones]:
+NO HUMAN FIGURES
+[u otras restricciones específicas]
+
+Aspect ratio {ratio}, magazine-quality composition.
+```
+
+#### Confirmación de coste (obligatoria si genera más de 1 imagen):
 
 Antes de llamar al modelo, si la fase D devolvió `carrusel de 3` o `n>1`,
 muestra un aviso al usuario y pide confirmación:
@@ -389,6 +450,71 @@ Devuelve el prompt como bloque copy-paste con instrucciones en español:
 > Pega esto en ChatGPT o Gemini junto con una foto de referencia tuya si la
 > imagen requiere que aparezcas. Descarga el resultado. Cuando lo tengas,
 > dímelo y seguimos con la publicación.
+
+---
+
+### Fase D3 — Edición de imagen (con referencia)
+
+Activar esta fase si el usuario:
+- Pasa una o varias imágenes como referencia y dice "úsala", "edítala",
+  "ponme a mí ahí", "haz una variante de esta", "mantén este estilo".
+- Quiere que aparezca en la imagen pero usando una foto suya específica.
+- Quiere modificar una imagen existente (cambiar fondo, añadir elementos,
+  hacer variantes manteniendo composición).
+
+#### Cómo funciona
+
+Tanto Fal `nano-banana-2/edit` como OpenAI `gpt-image-1` (endpoint
+`/v1/images/edits`) aceptan imagen(es) de referencia + prompt y generan
+una variante. La skill llama a `image_engine.py` con `--edit-from`:
+
+```bash
+python tools/image_engine.py \
+    --edit-from /path/a/foto-referencia.jpg \
+    --prompt "Same person in a modern minimalist office, professional attire, looking at camera, soft natural lighting from window, neutral background with #F5F1ED warm beige" \
+    --aspect-ratio 1:1 \
+    --output data/inbox-redes/<slug>/imagen.png
+```
+
+Para múltiples referencias (ej. foto del usuario + logo de marca):
+
+```bash
+python tools/image_engine.py \
+    --edit-from /path/foto-angel.jpg \
+    --edit-from /path/logo-marca.png \
+    --prompt "..." \
+    --output ...
+```
+
+#### Reglas de prompt para edición
+
+Las mismas reglas duras de Fase D2 (inglés, hex, tipografía, etc.) PLUS:
+
+- **Referirse al sujeto** como "the person in the reference photo" o "the
+  same person", para que el modelo mantenga la identidad de la foto.
+- **Describir SOLO lo que cambia** respecto a la referencia. No describir
+  detalles de la persona (eso lo saca de la foto).
+- **Especificar lo que se mantiene**: "preserve the person's face, hair
+  and outfit" si es relevante.
+
+Ejemplo correcto:
+
+```
+Same person from the reference photo, now standing in front of a clean
+minimalist whiteboard with a hand-drawn flowchart in dark gray markers.
+Modern startup office aesthetic, large window with soft daylight,
+muted #F5F1ED warm beige walls. Person facing camera with confident
+relaxed expression. Preserve face, hair and outfit from reference.
+Aspect ratio 1:1, photorealistic, magazine editorial quality.
+```
+
+#### Cuándo NO usar edit
+
+- Si el usuario pasa solo una idea de imagen sin referencia visual → Fase D2
+  normal (generate, no edit).
+- Si la imagen de referencia es muy distinta del estilo deseado → mejor
+  generar desde cero y usar la referencia solo en el prompt como
+  descripción.
 
 ---
 

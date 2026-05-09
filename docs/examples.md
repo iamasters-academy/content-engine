@@ -94,7 +94,55 @@ Edita `data/briefs/<slug>.yaml` directamente cuando notes patrones que quieres a
 
 Guarda el archivo. La próxima ejecución la skill recoge los cambios.
 
-## Ejemplo 7 — Solo generar, sin publicar
+## Ejemplo 7 — Edición con foto tuya como referencia
+
+¿Quieres que aparezcas en la imagen pero usando una foto tuya específica? La skill soporta edición:
+
+```
+> /content-engine
+> "Tengo una foto mía buena en /Users/angel/Desktop/foto-angel-perfil.jpg.
+   Úsala como referencia y ponme en una escena de oficina moderna con un
+   pizarrón al fondo donde se vea un flujo de marketing dibujado a mano.
+   Aspect 1:1, calidad pro."
+```
+
+La skill:
+1. Detecta que hay una imagen de referencia → activa **Fase D3 (edit)** en lugar de Fase D2 (generate).
+2. Construye el prompt en inglés referenciando "the person in the reference photo".
+3. Llama a `image_engine.py --edit-from /path/a/foto-angel-perfil.jpg --prompt "..."`.
+4. Internamente:
+   - Si tu provider es Fal → usa `fal-ai/nano-banana-2/edit`.
+   - Si es OpenAI → usa endpoint `/v1/images/edits`.
+5. Guarda la imagen en `data/inbox-redes/<slug>/imagen.png` y la muestra inline.
+
+### Variantes manteniendo identidad
+
+```
+> "Quiero 3 variantes de esta misma foto, todas en oficinas distintas,
+   manteniendo mi cara y outfit. Foto: ./foto-perfil.jpg"
+```
+
+La skill llama 3 veces a `--edit-from` con prompts distintos pero misma foto base.
+
+### Múltiples referencias
+
+```
+> "Combina mi foto con el logo de mi marca en una imagen tipo banner
+   profesional. Fotos en /assets/foto.jpg y /assets/logo.png"
+```
+
+```bash
+# Internamente:
+python tools/image_engine.py \
+    --edit-from /assets/foto.jpg \
+    --edit-from /assets/logo.png \
+    --prompt "..." \
+    --output ...
+```
+
+---
+
+## Ejemplo 8 — Solo generar, sin publicar
 
 Si tu community manager publica desde Buffer/Metricool, no hace falta que la skill publique. Solo dile:
 

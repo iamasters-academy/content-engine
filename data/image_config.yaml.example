@@ -4,8 +4,9 @@
 provider: fal                          # fal | openai
 model_id: nano-banana-2
 endpoint: fal-ai/nano-banana-2
+edit_endpoint: fal-ai/nano-banana-2/edit   # endpoint para modo edición
 defaults:
   aspect_ratio: "1:1"
-  resolution: "1K"
+  resolution: "2K"                     # 0.5K | 1K | 2K | 4K — 2K es buen sweet spot calidad/coste
   output_format: "png"
 notes: "Config default. La skill puede regenerar este archivo si pides cambiar de modelo."
