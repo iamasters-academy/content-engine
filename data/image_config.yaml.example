@@ -1,0 +1,11 @@
+# Copia este archivo a image_config.yaml y ajusta si quieres cambiar de modelo.
+# image_config.yaml está en .gitignore (es config local).
+
+provider: fal                          # fal | openai
+model_id: nano-banana-2
+endpoint: fal-ai/nano-banana-2
+defaults:
+  aspect_ratio: "1:1"
+  resolution: "1K"
+  output_format: "png"
+notes: "Config default. La skill puede regenerar este archivo si pides cambiar de modelo."

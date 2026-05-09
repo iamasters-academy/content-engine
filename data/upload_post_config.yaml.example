@@ -1,0 +1,6 @@
+# Copia este archivo a upload_post_config.yaml y rellena tu user real.
+# upload_post_config.yaml está en .gitignore (no se sube a GitHub).
+
+user: "TU_USERNAME_DE_UPLOAD_POST"     # ej. angelapa_ia (lo encuentras en tu dashboard de upload-post.com)
+linkedin_page_id: ""                   # opcional — solo si publicas en página LI de empresa
+facebook_page_id: ""                   # obligatorio solo si vas a publicar en Facebook

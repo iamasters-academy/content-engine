@@ -46,3 +46,7 @@ Thumbs.db
 # Logs
 *.log
 publish-log.json
+
+# Config de usuario (contiene username personal)
+data/upload_post_config.yaml
+data/image_config.yaml
