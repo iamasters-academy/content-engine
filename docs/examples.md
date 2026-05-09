@@ -1,57 +1,74 @@
-# Examples
+# Ejemplos de uso
 
-Real walkthroughs to learn the skill's behavior.
+Casos reales para entender el comportamiento de la skill.
 
-## Example 1 — Idea → 5 pieces (no image, no publish)
-
-```
-> /content-engine
-> "Just generate the 5 pieces for this idea, no image, no publishing:
-   Spent 2 hours rebuilding our Notion database from scratch and ended
-   up cutting it in half. Less is more — confirmed again."
-```
-
-The skill:
-1. Loads your brief from `data/briefs/<your-slug>.yaml`.
-2. Skips phases A, D, D2, E.
-3. Runs phase B (input is plain text, no transcription needed).
-4. Runs phase C (5 pieces).
-5. Shows them. You can copy/paste manually wherever.
-
-## Example 2 — Audio recording → full pipeline
+## Ejemplo 1 — Idea suelta → 5 piezas (sin imagen, sin publicar)
 
 ```
 > /content-engine
-> "Take this audio and turn it into a LinkedIn post + Instagram post
-   with an image. Aspect 1:1, no me in the picture, Fal pro.
-   Audio: ~/Desktop/morning-thought.m4a"
+> "Solo genera las 5 piezas para esta idea, sin imagen y sin publicar:
+   Pasé 2h reconstruyendo nuestra base de Notion desde cero y acabé
+   recortándola a la mitad. Menos es más, confirmado otra vez."
 ```
 
-The skill:
-1. Loads brief.
-2. Phase B: transcribes the audio with Groq (`whisper-large-v3-turbo`) using your brief language.
-3. Phase C: 5 pieces (you'll only use LI + IG, but it generates all 5 for the dashboard).
-4. Phase D: skipped (you already specified the visual answers in the prompt).
-5. Phase D2: builds image prompt, calls Fal `nano-banana-2`, downloads.
-6. Phase E: asks "publish to LinkedIn + Instagram?", you confirm, posts go live.
-7. Saves everything to `data/inbox-redes/20260510-morning-thought/`.
+La skill:
+1. Carga tu brief de `data/briefs/<tu-slug>.yaml`.
+2. Salta fases 0, 0.5, D, D2, E.
+3. Ejecuta Fase B (input es texto, sin transcripción).
+4. Ejecuta Fase C (5 piezas).
+5. Te las muestra. Las copias y pegas tú a mano donde quieras.
 
-## Example 3 — YouTube URL → only the X thread
+## Ejemplo 2 — Audio → flujo completo
 
 ```
 > /content-engine
-> "Read this YouTube video and pull only an X thread out of it. No image, no publish.
+> "Coge este audio y conviértelo en post de LinkedIn + Instagram con
+   imagen. Ratio 1:1, sin yo en la foto, ruta pro.
+   Audio: ~/Desktop/idea-mañana.m4a"
+```
+
+La skill:
+1. Carga brief.
+2. Fase B: transcribe el audio con Groq (`whisper-large-v3-turbo`) usando el idioma del brief.
+3. Fase C: genera las 5 piezas (aunque solo vayas a usar LI + IG, las 5 sirven para el dashboard).
+4. Fase D: ya respondiste en el prompt inicial, no pregunta más.
+5. Fase D2: construye prompt en inglés, llama a `image_engine.py`, descarga la imagen.
+6. Fase E: pregunta "¿LinkedIn + Instagram?", confirmas, los posts salen reales.
+7. Guarda todo en `data/inbox-redes/20260510-idea-mañana/`.
+
+## Ejemplo 3 — URL de YouTube → solo hilo de X
+
+```
+> /content-engine
+> "Lee este vídeo de YouTube y saca solo un hilo de X. Sin imagen, sin publicar.
    https://www.youtube.com/watch?v=..."
 ```
 
-The skill:
-1. Phase B: WebFetch on the URL, extracts transcript or page text.
-2. Phase C: only the X thread template.
-3. Stops. You copy/paste the thread into X manually.
+La skill:
+1. Fase B: WebFetch sobre la URL, extrae transcripción o texto de la página.
+2. Fase C: solo la plantilla de X thread.
+3. Para. Copias y pegas el hilo en X manualmente.
 
-## Example 4 — Re-using brief with different brand voice
+## Ejemplo 4 — Cambiar de modelo de imagen sobre la marcha
 
-If you have multiple personas (e.g. you post as yourself AND as your company), keep multiple briefs:
+```
+> /content-engine
+> "Cambia el modelo de imagen a flux-pro/v1.1-ultra. Esta foto la quiero más fotorealista."
+```
+
+La skill edita `data/image_config.yaml` y continúa con el nuevo modelo.
+
+O incluso pasarle un modelo nuevo que no conoce:
+
+```
+> "Usa este modelo: https://fal.ai/models/fal-ai/recraft-v3/api"
+```
+
+La skill lee la doc, configura el adaptador y genera la imagen. Sin actualizar el repo.
+
+## Ejemplo 5 — Reusar brief con varias marcas personales
+
+Si publicas como tú **y** como tu empresa, mantén briefs separados:
 
 ```
 data/briefs/
@@ -60,19 +77,29 @@ data/briefs/
 └── iamasters-academy.yaml
 ```
 
-When you run `/content-engine`, ask:
+Cuando ejecutas `/content-engine`, dile:
 
-> "Use the iamasters-academy brief for this one"
+> "Usa el brief iamasters-academy para este post"
 
-The skill loads that specific brief and adapts voice accordingly.
+La skill carga ese brief específico y adapta la voz.
 
-## Example 5 — Tuning your brief over time
+## Ejemplo 6 — Ajustar el brief con el tiempo
 
-You can edit `data/briefs/<slug>.yaml` directly any time. Common tweaks:
+Edita `data/briefs/<slug>.yaml` directamente cuando notes patrones que quieres ajustar:
 
-- Add a new anti-topic the skill keeps slipping into.
-- Add a new format preference ("text_heavy: false" if you start preferring shorter posts).
-- Adjust the default CTA to a new offer.
-- Add a brand reference if you want the voice to lean toward someone specific.
+- Añadir un anti-tema nuevo en el que la skill se mete sin querer.
+- Cambiar `format_preferences.text_heavy` a `false` si empiezas a preferir posts más cortos.
+- Actualizar el CTA por defecto a una oferta nueva.
+- Añadir una marca de referencia si quieres que la voz tire hacia alguien específico.
 
-Save the file. Next time you run the skill, it picks up the changes.
+Guarda el archivo. La próxima ejecución la skill recoge los cambios.
+
+## Ejemplo 7 — Solo dashboard, sin publicar
+
+Si tu community manager publica desde Buffer/Metricool, no hace falta que la skill publique. Solo dile:
+
+```
+> "Genera las 5 piezas + imagen + dashboard. No publiques."
+```
+
+La skill genera todo y te deja `dashboard.html` listo. Tu CM lo abre y trabaja desde ahí.

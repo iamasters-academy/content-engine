@@ -1,27 +1,27 @@
-# X (Twitter) Thread Template
+# Plantilla — Hilo en X (Twitter)
 
-5-9 tweets. Each tweet ≤ 280 chars. First tweet is the hook.
+5-9 tweets. Cada tweet ≤ 280 caracteres. El primero es el hook.
 
-## Structure
+## Estructura
 
-1. **Tweet 1 — Hook**. Promise something specific. Curiosity gap.
-2. **Tweet 2 — Setup**. Context for the story.
-3. **Tweets 3-7 — Body**. One idea per tweet. Each tweet should be readable on its own.
-4. **Tweet 8 — Lesson**. Distilled takeaway.
-5. **Tweet 9 — CTA**. From brief. Plus a "follow me for more X-style" line.
+1. **Tweet 1 — Hook**. Promete algo concreto. Crea curiosity gap.
+2. **Tweet 2 — Setup**. Contexto para la historia.
+3. **Tweets 3-7 — Cuerpo**. Una idea por tweet. Cada tweet debe leerse solo.
+4. **Tweet 8 — Lección**. Takeaway destilado.
+5. **Tweet 9 — CTA**. Del brief. Más una línea "follow me for more".
 
-## Hard rules
+## Reglas duras
 
-- 280 char hard limit per tweet.
-- No emojis at start of any tweet.
-- Use 1-2 line breaks max within a tweet (X collapses long whitespace).
-- Match `tone.primary` from brief, lean shorter and punchier than other channels.
-- Use `language` from brief.
-- Don't number the tweets in the text — X auto-numbers in thread view.
-- Last tweet should also work as a standalone if quoted.
+- 280 caracteres MAX por tweet (límite duro).
+- Sin emoji al inicio de ningún tweet.
+- Máximo 1-2 saltos de línea dentro de un tweet (X colapsa whitespace largo).
+- Respeta `tone.primary` del brief, tirando más corto y punzante que en otros canales.
+- Output en el `language` del brief.
+- NO numeres los tweets en el texto — X auto-numera en vista de hilo.
+- El último tweet debe funcionar standalone si alguien lo cita.
 
 ## Variables
 
-- `{{thread}}` — array of tweets
-- `{{schedule_suggestion}}` — e.g. "Thursday 14:00 CET"
+- `{{thread}}` — array de tweets
+- `{{schedule_suggestion}}` — ej. "Jueves 14:00 CET"
 - `{{tweet_count}}` — auto

@@ -1,28 +1,28 @@
-# LinkedIn Post Template
+# Plantilla — Post LinkedIn
 
-Length: 200-500 words. Hook in first 2 lines (mobile feed cuts at line 3).
+Longitud: 200-500 palabras. Hook en las primeras 2 líneas (el feed móvil corta en la línea 3).
 
-## Structure
+## Estructura
 
-1. **Hook** (2 lines max). One specific number or one tension. NO emojis to start.
-2. **Context** (2-3 lines). Where, when, who. Concrete.
-3. **The story** (5-10 lines). What happened. Use short sentences. Break lines often.
-4. **The pivot** ("But the prize wasn't that"). Surface the deeper insight.
-5. **3 lessons / takeaways**. Numbered list.
-6. **CTA**. From brief.
+1. **Hook** (máx 2 líneas). Un número específico o una tensión clara. NO empezar con emoji.
+2. **Contexto** (2-3 líneas). Dónde, cuándo, quién. Concreto.
+3. **Historia** (5-10 líneas). Qué pasó. Frases cortas. Saltos de línea frecuentes.
+4. **El giro** ("Pero el premio no fue ese"). Saca el insight más profundo.
+5. **3 lecciones / takeaways**. Lista numerada.
+6. **CTA**. Del brief.
 
-## Hard rules
+## Reglas duras
 
-- Cite numbers from the input or research. NEVER invent.
-- Match `tone.primary` from brief.
-- End with default CTA from brief unless input specifies otherwise.
-- Avoid anti-topics from brief.
-- Use `language` from brief for output.
-- Do NOT use hashtags (LinkedIn 2026: hashtags hurt reach).
+- Cita números del input o del research. NUNCA inventar.
+- Respeta `tone.primary` del brief.
+- Termina con el CTA por defecto del brief salvo que el input diga otra cosa.
+- Evita los anti-temas del brief.
+- Output en el `language` del brief.
+- NO uses hashtags (en LinkedIn 2026 los hashtags reducen alcance).
 
-## Variables
+## Variables a rellenar
 
-- `{{title}}` — punchy title for the dashboard
-- `{{content}}` — the actual post body
-- `{{schedule_suggestion}}` — e.g. "Tuesday 09:00 CET"
-- `{{word_count}}` — auto-calculated
+- `{{title}}` — título corto para el dashboard
+- `{{content}}` — el cuerpo del post
+- `{{schedule_suggestion}}` — ej. "Martes 09:00 CET"
+- `{{word_count}}` — auto

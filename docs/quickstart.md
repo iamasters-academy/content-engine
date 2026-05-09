@@ -1,86 +1,104 @@
-# Quickstart — your first post in 10 minutes
+# Quickstart — tu primer post en 10 minutos
 
-Assumes you finished [installation.md](installation.md).
+> Asume que ya has clonado el repo. Si no, hazlo:
+> ```bash
+> git clone https://github.com/iamasters-academy/content-engine.git ~/.claude/skills/content-engine
+> ```
 
-## 1. Open Claude Code in any project
+---
+
+## 1. Abre Claude Code en cualquier proyecto
 
 ```bash
-cd ~/some-project
+cd ~/cualquier-carpeta
 claude
 ```
 
-## 2. Trigger the skill
+> ¿Usas Claude Cowork? Igual: abre Cowork, ya tienes la skill disponible.
+
+## 2. Lanza la skill
 
 ```
 /content-engine
 ```
 
-## 3. First-run brand brief (8-10 min, only the first time)
+## 3. Primer arranque — onboarding (~20 min, solo la primera vez)
 
-The skill asks you 8-10 questions. Answer naturally. Examples:
+La skill detecta que es tu primera vez y arranca el wizard. Te lleva por:
 
-- *"Who is your ideal client?"* → "B2B SMB owners of 10-50 people who feel their team wastes time on repetitive tasks"
-- *"What's your differentiator?"* → "I implement the fix and stay until the team adopts it. Results in 90 days or refund."
-- *"Tone?"* → "Direct, with data. Zero hype."
-- *"Anti-topics?"* → "Generic motivation, AI hype without use case"
-- *"Default CTA?"* → "DM me for a 15-min check, no charge"
+- **Fase 0** — Crear las 3 cuentas necesarias (Fal, Groq, Upload-Post). Te dice exactamente qué hacer en cada una.
+- **Fase 0.5** — Elegir tu modelo de imagen (default: `nano-banana-2`).
+- **Fase A** — Construir tu brief de marca con 8-10 preguntas.
 
-The skill generates a YAML brief, shows it to you, you validate, it saves it to `data/briefs/your-name.yaml`.
+Detalle completo del wizard: [onboarding-flow.md](onboarding-flow.md).
 
-## 4. Give it your input
+## 4. Pásale tu input
 
-Pass anything:
+Cualquiera de estos:
 
 ```
-"Take this idea and make me content for LinkedIn and Instagram:
-Today a client of 18 people who manually invoiced 200 invoices/month
-saved 26 hours by automating it with AI. The admin assistant moved
-those hours to chasing payments and brought down receivables from
-90 to 65 days."
+"Hazme contenido para LinkedIn e Instagram con esta idea:
+Hoy un cliente de 18 personas facturaba 200 facturas al mes a mano,
+8 minutos cada una, 26 horas mensuales. Lo automatizamos con IA: 30
+segundos por factura, cero errores."
 ```
 
-Or pass a file:
+O un archivo:
 
 ```
-"Transcribe this audio and turn it into content: ./morning-recording.m4a"
+"Transcribe este audio y conviértelo en contenido: ./grabacion-mañana.m4a"
 ```
 
-Or a URL:
+O una URL:
 
 ```
-"Read this article and turn the key insight into content:
-https://example.com/article-i-liked"
+"Lee este artículo y saca el insight clave para contenido:
+https://ejemplo.com/articulo-que-me-gusto"
 ```
 
-## 5. Review the 5 pieces
+## 5. Revisa las 5 piezas
 
-The skill generates LinkedIn / X / Instagram / YouTube short / TikTok pieces and shows them all. Edit any of them by saying:
+La skill genera LinkedIn / X / Instagram / YouTube short / TikTok y te las muestra todas. Edita la que quieras:
 
-> "Make the LinkedIn post 30% shorter and remove the third lesson."
+> "Acorta el post de LinkedIn un 30% y quita la tercera lección"
 
-## 6. Choose your visual
+## 6. Decide el visual
 
-The skill asks:
+La skill pregunta:
 
-- 1 image, carousel of 3, or reel script?
-- Aspect ratio? (1:1 IG, 9:16 reels, 16:9 LinkedIn cover)
-- Are you in the image?
-- Pro (Fal.ai automatic) or free (ChatGPT manual)?
+- ¿1 imagen, carrusel de 3 o guion de reel?
+- ¿Aspect ratio? (1:1 IG, 9:16 reels, 16:9 LinkedIn cover)
+- ¿Sales tú en la imagen?
+- ¿Pro (skill genera con tu modelo configurado) o gratis (te da el prompt para ChatGPT)?
 
-If you pick Pro, the skill calls Fal.ai's `nano-banana-2`, waits ~10 seconds, and shows you the image.
+Si eliges Pro, la skill llama a tu modelo (Fal, OpenAI o el que configuraste), espera ~10 segundos y te enseña la imagen.
 
-## 7. Publish
+## 7. Publica
 
-The skill asks which networks to publish to (checkboxes). It calls Upload-Post API and gives you the post URLs.
+La skill pregunta en qué redes (checkboxes). Llama a Upload-Post API y te devuelve las URLs reales de los posts publicados.
 
-## 8. Hand off the rest
+## 8. Pasa el resto al community manager
 
-Open the generated `dashboard.html` in your `data/inbox-redes/<date>-<slug>/` folder. Share with your community manager via WhatsApp. They have everything ready: copy-to-clipboard buttons, schedule suggestions, hashtags.
+La skill genera `dashboard.html` en `data/inbox-redes/<fecha>-<slug>/`. Es un HTML con tabs por canal, copy-to-clipboard y calendario sugerido. Lo compartes por WhatsApp con tu CM. Tiene todo listo.
 
 ---
 
-## What's next
+## Posts siguientes (después del primer arranque)
 
-- See [examples.md](examples.md) for real walkthroughs.
-- Tune your brief over time — edit `data/briefs/your-name.yaml` directly any time.
-- Share the skill: it's MIT licensed.
+Sin onboarding. Solo:
+
+```
+/content-engine
+"Convierte esto en contenido: <tu input>"
+```
+
+Tiempo medio: **2-3 minutos por post**.
+
+---
+
+## Qué viene después
+
+- Mira [examples.md](examples.md) para casos reales.
+- Ajusta tu brief cuando quieras editando `data/briefs/<slug>.yaml` directamente.
+- Cambia de modelo de imagen editando `data/image_config.yaml` directamente o pidiéndoselo a la skill: "cambia el modelo de imagen a flux-pro/v1.1-ultra".
+- Comparte la skill: es MIT.

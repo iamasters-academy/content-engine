@@ -1,98 +1,193 @@
-# Installation guide
+# Guía de instalación
 
-## 1. Clone the skill
+> **¿Solo quieres usarla rápido?** No leas esta guía. Ejecuta `/content-engine` y la skill te lleva sola. Esta guía es para casos en que prefieres hacerlo manualmente.
+
+---
+
+## Instalación express (con wizard)
+
+```bash
+git clone https://github.com/iamasters-academy/content-engine.git ~/.claude/skills/content-engine
+claude
+```
+
+Dentro de Claude Code:
+
+```
+/content-engine
+```
+
+La skill te guía. Listo. **Si esto te basta, no necesitas el resto del documento.**
+
+---
+
+## Instalación manual (sin wizard)
+
+Útil si prefieres tener todo configurado antes de hablar con la skill.
+
+### 1. Clonar la skill
 
 ```bash
 git clone https://github.com/iamasters-academy/content-engine.git ~/.claude/skills/content-engine
 cd ~/.claude/skills/content-engine
 ```
 
-## 2. Get the three API keys
+### 2. Conseguir las API keys
 
-### Fal.ai (image generation)
+#### Fal.ai (generación de imagen) — obligatoria
 
-1. Sign up at https://fal.ai
-2. Go to https://fal.ai/dashboard/keys
-3. Create a new key
-4. Copy it
+1. Regístrate en https://fal.ai (puedes usar tu Google).
+2. Ve a https://fal.ai/dashboard/keys y crea una key.
+3. Cópiala.
 
-### Groq (audio transcription)
+#### Groq (transcripción de audio/vídeo) — opcional
 
-1. Sign up at https://console.groq.com
-2. Go to https://console.groq.com/keys
-3. Create a new key
-4. Copy it
+Solo si vas a pasar audios o vídeos como input.
 
-### Upload-Post (publishing)
+1. Regístrate en https://console.groq.com.
+2. Ve a https://console.groq.com/keys y crea una key.
+3. Cópiala.
 
-1. Sign up at https://upload-post.com — Free plan, 10 uploads/month
-2. In the dashboard, connect LinkedIn (5 min OAuth)
-3. Connect Instagram (5 min OAuth)
-   - **Important**: Instagram requires Business or Creator account with a Facebook Page
-4. Go to API section → generate API key
-5. Copy it
+#### Upload-Post (publicación) — opcional
 
-## 3. Configure environment
+Solo si vas a publicar automáticamente. Si solo quieres generar contenido y publicar a mano, salta esto.
+
+1. Regístrate en https://upload-post.com — Plan Free, 10 publicaciones/mes.
+2. En el dashboard, conecta LinkedIn (botón "Connect LinkedIn" → autoriza).
+3. Conecta Instagram. **Importante**: requiere cuenta Business o Creator enlazada a una página de Facebook. Si no la tienes así, la conviertes en `Instagram → Settings → Account → Switch to Professional Account`.
+4. Sección API → genera API key. Cópiala.
+
+#### OpenAI (alternativa de imagen) — opcional
+
+Solo si vas a usar OpenAI en lugar de Fal para imagen.
+
+1. https://platform.openai.com/api-keys → crea key.
+2. Asegúrate de tener crédito en https://platform.openai.com/billing.
+
+### 3. Configurar variables de entorno
 
 ```bash
+cd ~/.claude/skills/content-engine
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and fill in your three keys. Then:
+Edita `.env.local` y rellena las claves que tengas.
+
+Cárgalas en cada sesión de shell:
 
 ```bash
-# Load on every shell session — pick one:
-
-# Option A: source manually
+# Opción A — sourcear manualmente
 source .env.local
 
-# Option B: add to ~/.zshrc or ~/.bashrc
+# Opción B — añadir a ~/.zshrc o ~/.bashrc para que se carguen siempre
 echo 'set -a; source ~/.claude/skills/content-engine/.env.local; set +a' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-Verify:
+Verifica:
 
 ```bash
-echo $FAL_KEY $GROQ_API_KEY $UPLOAD_POST_API_KEY
-# Should show three non-empty strings
+echo $FAL_KEY $UPLOAD_POST_API_KEY
+# Debería mostrar dos strings no vacíos
 ```
 
-## 4. Test the tools individually
+### 4. Configurar el modelo de imagen
+
+Crea `data/image_config.yaml`:
+
+```yaml
+provider: fal
+model_id: nano-banana-2
+endpoint: fal-ai/nano-banana-2
+defaults:
+  aspect_ratio: "1:1"
+  resolution: "1K"
+  output_format: "png"
+notes: ""
+```
+
+Si prefieres OpenAI:
+
+```yaml
+provider: openai
+model_id: gpt-image-1
+endpoint: ""
+defaults:
+  aspect_ratio: "1:1"
+  resolution: ""
+  output_format: "png"
+notes: ""
+```
+
+### 5. (Opcional) Crear tu brief de marca a mano
+
+Copia `templates/brief.yaml.template` a `data/briefs/mi-marca.yaml` y rellena los campos. La skill respeta este archivo como fuente de verdad. Si no lo creas, la skill te entrevistará en la primera ejecución.
+
+### 6. Test individual de los tools
 
 ```bash
-# Test Fal — should generate a 1:1 PNG and save it
+# Test Fal — debe generar un PNG 1:1 y guardarlo
 python ~/.claude/skills/content-engine/tools/fal_image.py \
     --prompt "A black labrador swimming in a clear lake, photorealistic" \
     --aspect-ratio 1:1 \
     --output /tmp/fal-test.png
 
-# Test Groq — record a 5s audio first, then:
-python ~/.claude/skills/content-engine/tools/groq_transcribe.py \
-    --file /tmp/test.m4a --language en
+# Test image_engine (delega al backend configurado)
+python ~/.claude/skills/content-engine/tools/image_engine.py \
+    --prompt "Same labrador, different angle" \
+    --aspect-ratio 1:1 \
+    --output /tmp/engine-test.png
 
-# Test Upload-Post — publish a test post (will go to your real LinkedIn!)
+# Test Groq (graba un audio corto primero)
+python ~/.claude/skills/content-engine/tools/groq_transcribe.py \
+    --file /tmp/test.m4a --language es
+
+# Test Upload-Post (publica un test en LinkedIn — vas a tener que borrarlo después!)
 python ~/.claude/skills/content-engine/tools/upload_post.py \
     --image /tmp/fal-test.png \
-    --caption "Testing content-engine. Will delete." \
+    --caption "Probando content-engine. Lo borraré." \
     --platforms linkedin
 ```
 
-If all three work, you're set.
+Si los 4 funcionan, todo está bien.
 
-## 5. Use it
-
-In Claude Code:
+### 7. Usar la skill
 
 ```
 /content-engine
 ```
 
-First run: ~8-10 min to fill in your brand brief. After that, ~2 min per post.
+La skill detecta que tienes todo configurado y va directa a generar contenido.
+
+---
 
 ## Troubleshooting
 
-- **`FAL_KEY env var not set`**: source `.env.local` again or add it to your shell rc file.
-- **Instagram publish fails**: confirm Business/Creator + Facebook Page connected in Upload-Post.
-- **Groq `file too large`**: free tier is 25 MB. Either upgrade to dev tier (100 MB) or chunk the audio.
-- **Fal queue timeout**: rare; retry. The skill auto-polls for up to 90 seconds.
+### `FAL_KEY no está definida`
+
+Cargas `.env.local` otra vez:
+```bash
+source ~/.claude/skills/content-engine/.env.local
+```
+
+O añade la línea de auto-load a tu `~/.zshrc` (paso 3 de arriba).
+
+### Instagram no aparece en Upload-Post tras conectar
+
+Tu cuenta es Personal. Pasa a Business o Creator desde la app de Instagram (Settings → Account → Switch to Professional Account) y enlázala a una Facebook Page.
+
+### Groq devuelve `file too large`
+
+Free tier es 25 MB por archivo. O subes a dev tier (100 MB) o trozeas el audio. La skill te explica cómo si llegas ahí.
+
+### Fal devuelve timeout
+
+Raro. La skill auto-pollea hasta 120 segundos. Reintenta.
+
+### OpenAI devuelve 403
+
+Tu cuenta no tiene crédito. Mete saldo en https://platform.openai.com/billing.
+
+### El comando `/content-engine` no aparece en Claude Code
+
+Verifica que la skill está en `~/.claude/skills/content-engine/` y reinicia Claude Code (cerrar y volver a abrir terminal).

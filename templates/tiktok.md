@@ -1,28 +1,29 @@
-# TikTok Script Template
+# Plantilla — Guion TikTok
 
-Duration: 25-40 seconds. Vertical 9:16. Conversational tone.
+Duración: 25-40 segundos. Vertical 9:16. Tono conversacional.
 
-## Structure (with timestamps)
+## Estructura (con timestamps)
 
-- **0:00-0:02 — Pattern interrupt** (2s). Visual or verbal jolt. NEVER start with "Hi guys".
-- **0:02-0:08 — Hook + tension** (6s). Question, contrarian claim, or specific number.
-- **0:08-0:25 — Story** (17s). One concrete example. Visual support always.
-- **0:25-0:35 — Insight** (10s). The "ahá".
-- **0:35-0:40 — CTA** (5s). Soft. From brief.
+- **0:00-0:02 — Pattern interrupt** (2s). Sacudida visual o verbal. NUNCA empezar con "Hola chicos".
+- **0:02-0:08 — Hook + tensión** (6s). Pregunta, claim contrario o número específico.
+- **0:08-0:25 — Historia** (17s). Un ejemplo concreto. Apoyo visual siempre.
+- **0:25-0:35 — Insight** (10s). El "ahá".
+- **0:35-0:40 — CTA** (5s). Suave. Del brief.
 
-## Hard rules
+## Reglas duras
 
-- Faster pace than YouTube short.
-- Use trending sound if relevant (note as `[Audio: trending — pick at edit]`).
-- Add `[B-roll: ...]` and `[Text overlay: ...]` cues.
-- Match `tone.primary` from brief, lean younger/casual.
-- Use `language` from brief.
-- Avoid jargon — TikTok audience skews wider.
+- Ritmo más rápido que YouTube short.
+- Usa audio en tendencia si encaja (anota como `[Audio: trending — pick at edit]`).
+- Añade `[B-roll: ...]` y `[Text overlay: ...]` para cues.
+- Respeta `tone.primary` del brief, tirando más joven/casual.
+- Output en el `language` del brief.
+- Evita jerga — la audiencia de TikTok es más amplia.
 
 ## Variables
 
-- `{{script}}` — script with timestamps and visual cues
-- `{{caption}}` — 100-150 char caption
-- `{{hashtags}}` — 4-6 hashtags max (more = spam signal on TikTok)
-- `{{audio_suggestion}}` — type of trending audio
-- `{{hook_alt}}` — 2 alternative hooks for A/B
+- `{{script}}` — guion con timestamps y cues visuales
+- `{{caption}}` — caption de 100-150 caracteres
+- `{{hashtags}}` — 4-6 hashtags max (más = signal de spam en TikTok)
+- `{{audio_suggestion}}` — tipo de audio en tendencia
+- `{{hook_alt}}` — 2 hooks alternativos para A/B
+```

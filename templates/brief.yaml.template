@@ -1,34 +1,34 @@
-# content-engine brand brief
-# Saved at: data/briefs/<slug>.yaml
-# Edit freely. The skill reads this on every run.
+# content-engine — brief de marca personal
+# Guardado en: data/briefs/<slug>.yaml
+# Edita libremente. La skill lee este archivo en cada ejecución.
 
-slug: example-personal-brand            # short kebab-case identifier
-language: es                            # ISO-639-1: es, en, pt, fr, …
+slug: ejemplo-marca-personal           # identificador corto en kebab-case
+language: es                           # ISO-639-1: es, en, pt, fr, …
 created_at: 2026-05-09
 updated_at: 2026-05-09
 
 person:
   name: ""
-  role: ""                              # e.g. "Productivity consultant for B2B SMBs"
+  role: ""                             # ej. "Consultor de productividad para PYMEs B2B"
   company: ""
 
 ideal_client:
-  who: ""                               # one paragraph
+  who: ""                              # un párrafo
   pains:
     - ""
     - ""
   desired_outcome: ""
 
-differentiator: ""                      # what makes you different in one sentence
+differentiator: ""                     # qué te hace diferente, en una frase
 
 tone:
-  primary: direct                       # direct | warm | technical | inspirational | sarcastic
-  notes: ""                             # any nuance
+  primary: directo                     # directo | cercano | técnico | inspiracional | sarcástico
+  notes: ""                            # cualquier matiz
 
-anti_topics:                            # NEVER post about these
+anti_topics:                           # cosas de las que NUNCA publicas
   - ""
 
-active_networks:                        # which networks the user actively posts on
+active_networks:                       # redes en las que estás activo
   - linkedin
   - instagram
   # - x
@@ -36,25 +36,25 @@ active_networks:                        # which networks the user actively posts
   # - youtube
 
 format_preferences:
-  text_heavy: true                      # likes long posts
-  story_led: true                       # likes narrative
-  data_driven: true                     # likes specific numbers
-  conversational: true                  # vs. corporate
+  text_heavy: true                     # te gustan los posts largos
+  story_led: true                      # te gusta la narrativa
+  data_driven: true                    # te gustan los números concretos
+  conversational: true                 # vs. corporativo
 
 cta:
-  default: "DM me for a free 15-min check"
+  default: "Mándame un DM si quieres una sesión gratis de 15 min"
   alternatives:
-    - "Comment if this resonates"
-    - "Link in bio for full breakdown"
+    - "Comenta si te resuena"
+    - "Link en bio para el desglose completo"
 
 visual_identity:
-  palette: []                           # optional: list of hex colors used in own brand
-  style_keywords: []                    # e.g. ["minimalist", "modern corporate", "warm"]
-  appears_in_images: prompt             # always | never | prompt (ask each time)
+  palette: []                          # opcional: lista de hex usados en tu marca
+  style_keywords: []                   # ej. ["minimalista", "corporativo moderno", "cálido"]
+  appears_in_images: prompt            # always | never | prompt (preguntar cada vez)
 
-brand_references:                       # 1-3 brands the user admires
+brand_references:                      # 1-3 marcas que admiras
   - ""
 
-# Internal notes (not used by the skill but useful for the user):
+# Notas internas (no se usan por la skill, útiles para ti):
 notes: |
-  Edit anything you want. The skill respects this file as ground truth.
+  Edita lo que quieras. La skill respeta este archivo como fuente de verdad.
