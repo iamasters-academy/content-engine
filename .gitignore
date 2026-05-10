@@ -17,6 +17,12 @@ _assets/
 *.jpg
 *.jpeg
 *.webp
+# Excepciones: logo y otros assets del repo (estos SÍ van al repo)
+!assets/logo.png
+!assets/*.png
+!assets/*.jpg
+!assets/*.jpeg
+!assets/*.webp
 
 # Audio / video uploads
 *.mp3
