@@ -69,7 +69,7 @@ def check_groq() -> dict:
     # Endpoint /openai/v1/models es público con la key, no consume cuota.
     status, body = _http_get(
         "https://api.groq.com/openai/v1/models",
-        headers={"Authorization": f"Bearer {key}"},
+        headers={"Authorization": f"Bearer {key}", "User-Agent": "python-httpx/0.27"},
     )
     if status == 200:
         return {"service": "groq", "ok": True, "configured": True, "message": "OK"}
