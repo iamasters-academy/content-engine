@@ -276,6 +276,15 @@ Guarda el input procesado en `data/inbox-redes/<YYYYMMDD>-<slug>/source.md`.
 
 Saca patrones del research, NO de tu conocimiento previo.
 
+**Señales opcionales de X:** si el tema necesita conversación actual en X y el
+usuario ya tiene `XQUIK_API_KEY`, puedes consultar Xquik antes de escribir:
+
+- REST: `https://docs.xquik.com/api-reference/x/search-tweets`
+- MCP: `https://docs.xquik.com/mcp/overview`
+
+Guarda en `source.md` solo citas breves, enlaces y métricas necesarias. Si no
+hay key, no bloquees el flujo: usa `WebSearch` y dilo.
+
 Genera una pieza por canal usando estas plantillas (en `templates/`):
 - `linkedin.md`
 - `instagram.md`
